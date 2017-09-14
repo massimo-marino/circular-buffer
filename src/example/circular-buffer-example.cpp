@@ -54,7 +54,7 @@ static void allow (const int64_t&& d = 0) noexcept
 }
 
 #ifdef DO_LOGS
-static void printCBStatus (const std::string& callerFun,
+static void printCBStatus(std::string&& callerFun,
                           const cb& aCircularBuffer,
                           std::mutex& printMx) noexcept
 {
@@ -85,7 +85,7 @@ static void printCBStatus (const std::string& callerFun,
             << (aCircularBuffer.isPopulated() ? "TRUE" : "FALSE")
             << std::endl;
 
-  aCircularBuffer.printData(static_cast<std::string>(callerFun));
+  aCircularBuffer.printData(std::forward<std::string>(callerFun));
 }  // printCBStatus
 #endif
 

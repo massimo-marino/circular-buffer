@@ -107,7 +107,7 @@ class cb: public cbBase
     return m_cbSize;
   }
 
-  void printData(const std::string& caller) const noexcept
+  void printData(const std::string&& caller) const noexcept
   {
     std::lock_guard<std::mutex> lg(m_mx);
 
