@@ -56,6 +56,7 @@ TEST(circularBuffer, test_4)
   cb aCircularBuffer(cbsize);
 
   ASSERT_EQ(cbsize, aCircularBuffer.size());
+  ASSERT_EQ(cbtype{}, aCircularBuffer.getFront());
 }
 
 TEST(circularBuffer, test_5)
@@ -115,7 +116,7 @@ TEST(circularBuffer, test_9)
   ASSERT_EQ(false, aCircularBuffer.isFull());
   ASSERT_EQ(false, aCircularBuffer.isPopulated());
   ASSERT_EQ(circular_buffer::cbBase::cbStatus::EMPTY, cbS);
-  ASSERT_EQ(0, item);
+  ASSERT_EQ(cbtype{}, item);
   ASSERT_EQ(0, numElements);
 }
 
@@ -244,7 +245,7 @@ TEST(circularBuffer, test_14)
   ASSERT_EQ(false, aCircularBuffer.isFull());
   ASSERT_EQ(true, aCircularBuffer.isPopulated());
   ASSERT_EQ(circular_buffer::cbBase::cbStatus::REMOVED, cbS);
-  ASSERT_EQ(123, item);
+  ASSERT_EQ(cbtype{123}, item);
   ASSERT_EQ(1, numElements);
 
   // remove an item
@@ -254,7 +255,7 @@ TEST(circularBuffer, test_14)
   ASSERT_EQ(false, aCircularBuffer.isFull());
   ASSERT_EQ(false, aCircularBuffer.isPopulated());
   ASSERT_EQ(circular_buffer::cbBase::cbStatus::REMOVED, cbS);
-  ASSERT_EQ(456, item);
+  ASSERT_EQ(cbtype{456}, item);
   ASSERT_EQ(0, numElements);
 }
 

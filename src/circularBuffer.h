@@ -141,6 +141,7 @@ class cb: public cbBase
               << std::endl;
   }
 
+  // add an item in the circular buffer, if not full
   cbaddret add(const T& item) const noexcept
   {
     if ( true == isFull() )
@@ -158,6 +159,13 @@ class cb: public cbBase
     return std::make_tuple(cbBase::cbStatus::ADDED, m_numElements);
   }
 
+  // return the first item in the circular buffer, no changes in it
+  T getFront() const noexcept
+  {
+    return m_pData.get()[m_readIndex];
+  }
+
+  // remove the first item in the circular buffer, if not empty
   cbremret remove() const noexcept
   {
     constexpr T noItem {};
@@ -171,7 +179,7 @@ class cb: public cbBase
     std::lock_guard<std::mutex> lg(m_mx);
 
     // until C++17
-    auto t = std::make_tuple(cbBase::cbStatus::REMOVED, m_pData.get()[m_readIndex], --m_numElements);
+    auto t = std::make_tuple(cbBase::cbStatus::REMOVED, getFront(), --m_numElements);
 
     m_pData.get()[m_readIndex] = noItem;
     m_readIndex = (m_readIndex + 1) % m_cbSize;
