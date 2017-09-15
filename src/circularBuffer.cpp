@@ -26,7 +26,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 namespace circular_buffer
 {
-constexpr unsigned int cbBase::m_defaultSize {3};
+const unsigned int cbBase::m_defaultSize {3};
 
 // BEGIN: ignore the warnings listed below when compiled with clang from here
 #pragma clang diagnostic push

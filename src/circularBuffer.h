@@ -41,12 +41,13 @@ namespace circular_buffer
 class cbBase
 {
  public:
-  cbBase() = delete;
+  // delegating ctor
+  cbBase() : cbBase(m_defaultSize) {}
   ~cbBase() = default;
   cbBase(const cbBase&) = delete;
   cbBase& operator= (const cbBase&) = delete;
 
-  explicit cbBase(const unsigned int cbSize = cbBase::m_defaultSize)
+  explicit cbBase(const unsigned int cbSize)
   :
   m_cbSize(cbSize)
   {
@@ -86,12 +87,13 @@ class cb: public cbBase
   using cbremret = std::tuple<cbBase::cbStatus, T, size_t>;
 
  public:
-  cb() = delete;
+  // delegating ctor
+  cb() : cb(m_defaultSize) {}
   ~cb() = default;
   cb(const cb&) = delete;
   cb& operator= (const cb&) = delete;
 
-  explicit cb(const unsigned int cbSize = cbBase::m_defaultSize)
+  explicit cb(const unsigned int cbSize)
   :
   cbBase(cbSize),
   // allocate an array of T's having size cbSize and store the pointer to it in

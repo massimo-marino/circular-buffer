@@ -36,7 +36,17 @@ TEST(circularBuffer, test_2)
 
 TEST(circularBuffer, test_3)
 {
-  EXPECT_NO_THROW(cb aCircularBuffer());
+  // default size set
+  EXPECT_NO_THROW(cb aCircularBuffer{});
+}
+
+TEST(circularBuffer, test_3A)
+{
+  // default size set
+  cb aCircularBuffer{};
+
+  // the default size is a private attribute of class cbBase set to 3
+  ASSERT_EQ(3, aCircularBuffer.size());
 }
 
 TEST(circularBuffer, test_4)
