@@ -155,7 +155,7 @@ class cb: public cbBase
     // until C++17
     return std::make_tuple(cbBase::cbStatus::ADDED, m_numElements);
   }
-  
+
   cbremret remove() const noexcept
   {
     constexpr T noItem {};
