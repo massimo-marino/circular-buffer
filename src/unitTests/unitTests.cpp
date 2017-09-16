@@ -53,6 +53,16 @@ TEST(circularBuffer, test_4)
 {
   // Size of the circular buffer used in the test
   constexpr unsigned int cbsize {100};
+  cb aCircularBuffer{cbsize};
+
+  ASSERT_EQ(cbsize, aCircularBuffer.size());
+  ASSERT_EQ(cbtype{}, aCircularBuffer.getFront());
+}
+
+TEST(circularBuffer, test_4A)
+{
+  // Size of the circular buffer used in the test
+  constexpr unsigned int cbsize {100};
   cb aCircularBuffer(cbsize);
 
   ASSERT_EQ(cbsize, aCircularBuffer.size());
@@ -256,6 +266,63 @@ TEST(circularBuffer, test_14)
   ASSERT_EQ(false, aCircularBuffer.isPopulated());
   ASSERT_EQ(circular_buffer::cbBase::cbStatus::REMOVED, cbS);
   ASSERT_EQ(cbtype{456}, item);
+  ASSERT_EQ(0, numElements);
+}
+
+TEST(circularBuffer, test_15)
+{
+  // Size of the circular buffer used in the test
+  constexpr unsigned int cbsize {3};
+  cb aCircularBuffer(cbsize);
+
+  circular_buffer::cbBase::cbStatus cbS {};
+  cbtype item {1};
+  size_t numElements {};
+
+  ASSERT_EQ(true, aCircularBuffer.isEmpty());
+  ASSERT_EQ(false, aCircularBuffer.isFull());
+  ASSERT_EQ(false, aCircularBuffer.isPopulated());
+
+  // try to add more items than capacity to an empty circular buffer
+  aCircularBuffer.add(item++);
+  aCircularBuffer.add(item++);
+  aCircularBuffer.add(item++);
+  aCircularBuffer.add(item++);
+  aCircularBuffer.add(item);
+
+  ASSERT_EQ(false, aCircularBuffer.isEmpty());
+  ASSERT_EQ(true, aCircularBuffer.isFull());
+  ASSERT_EQ(true, aCircularBuffer.isPopulated());
+  ASSERT_EQ(cbsize, aCircularBuffer.getNumElements());
+
+  // remove an item
+  std::tie(cbS, item, numElements) = aCircularBuffer.remove();
+  
+  ASSERT_EQ(false, aCircularBuffer.isEmpty());
+  ASSERT_EQ(false, aCircularBuffer.isFull());
+  ASSERT_EQ(true, aCircularBuffer.isPopulated());
+  ASSERT_EQ(circular_buffer::cbBase::cbStatus::REMOVED, cbS);
+  ASSERT_EQ(cbtype{1}, item);
+  ASSERT_EQ(2, numElements);
+
+  // remove an item
+  std::tie(cbS, item, numElements) = aCircularBuffer.remove();
+  
+  ASSERT_EQ(false, aCircularBuffer.isEmpty());
+  ASSERT_EQ(false, aCircularBuffer.isFull());
+  ASSERT_EQ(true, aCircularBuffer.isPopulated());
+  ASSERT_EQ(circular_buffer::cbBase::cbStatus::REMOVED, cbS);
+  ASSERT_EQ(cbtype{2}, item);
+  ASSERT_EQ(1, numElements);
+
+  // remove an item
+  std::tie(cbS, item, numElements) = aCircularBuffer.remove();
+  
+  ASSERT_EQ(true, aCircularBuffer.isEmpty());
+  ASSERT_EQ(false, aCircularBuffer.isFull());
+  ASSERT_EQ(false, aCircularBuffer.isPopulated());
+  ASSERT_EQ(circular_buffer::cbBase::cbStatus::REMOVED, cbS);
+  ASSERT_EQ(cbtype{3}, item);
   ASSERT_EQ(0, numElements);
 }
 

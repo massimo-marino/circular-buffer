@@ -41,30 +41,23 @@ namespace circular_buffer
 class cbBase
 {
  public:
-  // delegating ctor
+  // delegating ctor: default ctor sets the circular buffer's size to the default size
   cbBase() : cbBase(m_defaultSize) {}
   ~cbBase() = default;
   cbBase(const cbBase&) = delete;
   cbBase& operator= (const cbBase&) = delete;
+  cbBase(const cbBase&&) = delete;
+  cbBase& operator= (const cbBase&&) = delete;
+  explicit cbBase(const unsigned int cbSize);
 
-  explicit cbBase(const unsigned int cbSize)
-  :
-  m_cbSize(cbSize)
-  {
-    if ( 0 == m_cbSize )
-    {
-      throw std::invalid_argument("ERROR: The size of the circular buffer must not be zero");
-    }
-  }
+  enum class cbStatus: uint8_t {UNKNOWN, EMPTY, ADDED, REMOVED, FULL};
 
-  enum class cbStatus: uint8_t {EMPTY, ADDED, REMOVED, FULL};
-
- public:
   unsigned int getNumElements() const noexcept;
   bool isEmpty() const noexcept;
   bool isFull() const noexcept;
   bool isPopulated() const noexcept;
   const std::string& cbStatusString(const cbBase::cbStatus cbs) const noexcept;
+  size_t size() const noexcept;
 
  protected:
   using cbaddret = std::tuple<cbBase::cbStatus, size_t>;
@@ -76,7 +69,9 @@ class cbBase
   // instances are modifiable
   mutable std::mutex m_mx {};
   mutable unsigned int m_readIndex {0};
-  mutable unsigned int m_numElements {0};
+  mutable unsigned int m_numElements {0}; 
+  bool _isEmpty() const noexcept;
+  bool _isFull() const noexcept;
 };  // class cbBase
 
 // Template class
@@ -85,13 +80,19 @@ class cb: public cbBase
 {
  private:
   using cbremret = std::tuple<cbBase::cbStatus, T, size_t>;
+  const T m_noItem {};
 
  public:
-  // delegating ctor
+  // delegating ctor: default ctor builds a circular buffer with the default size
   cb() : cb(m_defaultSize) {}
   ~cb() = default;
   cb(const cb&) = delete;
   cb& operator= (const cb&) = delete;
+  cb(const cb&&) = delete;
+  cb& operator= (const cb&&) = delete;
+
+  // construct a unique pointer that will point to the data of the circular buffer
+  std::unique_ptr<T[]> m_pData{};
 
   explicit cb(const unsigned int cbSize)
   :
@@ -101,19 +102,9 @@ class cb: public cbBase
   m_pData ( std::make_unique<T[]>( cbSize ))
   {}
 
-  // construct a unique pointer that will point to the data of the circular buffer
-  std::unique_ptr<T[]> m_pData{};
-
-  size_t size() const noexcept
-  {
-    return m_cbSize;
-  }
-
   void printData(const std::string&& caller) const noexcept
-  {
+  {    
     std::lock_guard<std::mutex> lg(m_mx);
-
-    unsigned int ui {0};
 
     std::cout << "[" << __func__ << "] "
               << "[" << caller << "] "
@@ -121,19 +112,23 @@ class cb: public cbBase
 
     for (unsigned int i = 0; i < m_cbSize; ++i)
     {
-      std::cout << "[" << __func__ << "] "
-                << "[" << caller << "] "
-                << ui
-                << ": '"
-                << m_pData.get()[i]
-                << "'";
-      if ( m_readIndex != ui )
+      if ( m_noItem != m_pData.get()[i] || m_readIndex == i)
       {
-        std::cout << "\n";
-      } else {
-        std::cout << "  <--- Head\n";
+        std::cout << "[" << __func__ << "] "
+                  << "[" << caller << "] "
+                  << i
+                  << ": '"
+                  << m_pData.get()[i]
+                  << "'";
+        if ( m_readIndex != i )
+        {
+          std::cout << "\n";
+        }
+        else
+        {
+          std::cout << "  <--- Head\n";
+        }
       }
-      ++ui;
     }
     std::cout << "[" << __func__ << "] "
               << "[" << caller << "] "
@@ -144,13 +139,13 @@ class cb: public cbBase
   // add an item in the circular buffer, if not full
   cbaddret add(const T& item) const noexcept
   {
-    if ( true == isFull() )
+    std::lock_guard<std::mutex> lg(m_mx);
+
+    if ( true == _isFull() )
     {
       // until C++17
       return std::make_tuple(cbBase::cbStatus::FULL, m_cbSize);
     }
-
-    std::lock_guard<std::mutex> lg(m_mx);
 
     m_pData.get()[(m_readIndex + m_numElements) % m_cbSize] = item;
     ++m_numElements;
@@ -165,23 +160,21 @@ class cb: public cbBase
     return m_pData.get()[m_readIndex];
   }
 
-  // remove the first item in the circular buffer, if not empty
+  // remove the first item from the circular buffer, if not empty
   cbremret remove() const noexcept
   {
-    constexpr T noItem {};
+    std::lock_guard<std::mutex> lg(m_mx);
 
-    if ( true == isEmpty() )
+    if ( true == _isEmpty() )
     {
       // until C++17
-      return std::make_tuple(cbBase::cbStatus::EMPTY, noItem, 0);
+      return std::make_tuple(cbBase::cbStatus::EMPTY, m_noItem, 0);
     }
-
-    std::lock_guard<std::mutex> lg(m_mx);
 
     // until C++17
     auto t = std::make_tuple(cbBase::cbStatus::REMOVED, getFront(), --m_numElements);
 
-    m_pData.get()[m_readIndex] = noItem;
+    m_pData.get()[m_readIndex] = m_noItem;
     m_readIndex = (m_readIndex + 1) % m_cbSize;
 
     return t;

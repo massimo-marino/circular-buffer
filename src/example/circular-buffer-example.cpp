@@ -31,25 +31,29 @@
 #include <exception>
 #include <algorithm>
 ////////////////////////////////////////////////////////////////////////////////
-// Producer/Consumer example
+// Multi-threaded Producer/Consumer example
 // This example runs with numerical types only: bool, char, short int, int, ...
-// The type of data stored in the circular buffer
+// The data type stored in the circular buffer
 using cbtype = uint16_t;
 
-// Alias for the circular buffer used in the example
+// Alias for the circular buffer templated type used in the example
 using cb = circular_buffer::cb<cbtype>;
 // Size of the circular buffer used in the example
-static constexpr unsigned int CBSIZE {100};
+static constexpr unsigned int CBSIZE {50};
 
 // Number of items produced by the producer thread
-static constexpr cbtype MAX_LIMIT_DEFAULT{static_cast<cbtype>(1'000'000)};
+static constexpr cbtype MAX_LIMIT_DEFAULT{static_cast<cbtype>(20'000)};
 // in order to avoid overflow, take the min between the max limit default
 // value and the max value for the type cbtype
 static constexpr cbtype LIMIT {std::min(MAX_LIMIT_DEFAULT, std::numeric_limits<cbtype>::max())};
 
-static void allow (const int64_t&& d = 0) noexcept
+static void allow (const int64_t& d = 0) noexcept
 {
   std::this_thread::yield();
+  if ( 0 == d)
+  {
+    return;
+  }
   std::this_thread::sleep_for(std::chrono::nanoseconds(d));
 }
 
@@ -92,100 +96,125 @@ static void printCBStatus(std::string&& callerFun,
 static auto producerExample(cb& aCircularBuffer, std::mutex& printMx) noexcept -> cbtype
 {
 #ifdef DO_LOGS
+  circular_buffer::cbBase::cbStatus previousCBS {circular_buffer::cbBase::cbStatus::UNKNOWN};
+
   printCBStatus(__func__, aCircularBuffer, printMx);
-  circular_buffer::cbBase::cbStatus cbS {};
 #endif
-  
-  cbtype item {};
+
+  circular_buffer::cbBase::cbStatus cbS {circular_buffer::cbBase::cbStatus::UNKNOWN};
+  cbtype item {0};
   size_t numElements {};
 
-  while ( item < LIMIT)
+  while ( item <= LIMIT)
   {
-    if ( aCircularBuffer.isFull() )
+    // try to add an item; get the result and the number of items in the circular
+    // buffer after the action
+    std::tie(cbS, numElements) = aCircularBuffer.add(item);
+
+    switch (cbS)
     {
-#ifdef DO_LOGS
-      // buffer is full: yield the cpu
+      case circular_buffer::cbBase::cbStatus::ADDED:
       {
+#ifdef DO_LOGS
         std::lock_guard<std::mutex> mlg(printMx);
         std::clog << "[" << __func__ << "] "
-                  << "FULL - num of elements: "
-                  << aCircularBuffer.size()
+                  << aCircularBuffer.cbStatusString(cbS)
+                  << " - item: "
+                  << item
+                  << " - num of elements: "
+                  << numElements
                   << std::endl;
+        previousCBS = cbS;
+#endif
+        ++item;
+        allow(0);
       }
-#endif
-      allow(4);
-    }
-    else
-    {
-      // buffer is not full
-      // generate a new item and add it to the circular buffer
-      ++item;
+      break;
+      
+      case circular_buffer::cbBase::cbStatus::FULL:
+      {
 #ifdef DO_LOGS
-      std::tie(cbS, numElements) = aCircularBuffer.add(item);
-      std::lock_guard<std::mutex> mlg(printMx);
-      std::clog << "[" << __func__ << "] "
-                << aCircularBuffer.cbStatusString(cbS)
-                << " - item: "
-                << item
-                << " - num of elements: "
-                << numElements
-                << std::endl;
-#else
-      std::tie(std::ignore, numElements) = aCircularBuffer.add(item);
+        if ( cbS != previousCBS )
+        {
+          std::lock_guard<std::mutex> mlg(printMx);
+          std::clog << "[" << __func__ << "] "
+                    << aCircularBuffer.cbStatusString(cbS)
+                    << " - num of elements: "
+                    << numElements
+                    << std::endl;
+          previousCBS = cbS;
+        }
 #endif
-      allow(1);
+        allow(3);
+      }
+      break;
     }
   }
+
   std::lock_guard<std::mutex> mlg(printMx);
   std::clog << "[" << __func__ << "] "
             << "TERMINATED"
             << std::endl;
-  return item;
+  return (item - 1);
 }  // producerExample
 
 static auto consumerExample(cb& aCircularBuffer, std::mutex& printMx) noexcept -> cbtype
 {
 #ifdef DO_LOGS
+  circular_buffer::cbBase::cbStatus previousCBS {circular_buffer::cbBase::cbStatus::UNKNOWN};
+
   printCBStatus(__func__, aCircularBuffer, printMx);
-  circular_buffer::cbBase::cbStatus cbS {};
 #endif
-  
+
+  circular_buffer::cbBase::cbStatus cbS {circular_buffer::cbBase::cbStatus::UNKNOWN};
   cbtype item {};
   size_t numElements {};
-
-  while ( LIMIT != item )
+  
+  while ( item != LIMIT )
   {
-    if ( aCircularBuffer.isPopulated() )
+    // try to remove an item; get the result, the item, and the number of items
+    // in the circular buffer after the action
+    std::tie(cbS, item, numElements) = aCircularBuffer.remove();
+
+    switch ( cbS )
     {
-      // buffer contains some elements: remove an item from the circular buffer
-#ifdef DO_LOGS
-      std::tie(cbS, item, numElements) = aCircularBuffer.remove();
-      std::lock_guard<std::mutex> mlg(printMx);
-      std::clog << "[" << __func__ << "] "
-                << aCircularBuffer.cbStatusString(cbS)
-                << " - item removed: "
-                << item
-                << " - num of elements: "
-                << numElements
-                << std::endl;
-#else
-      std::tie(std::ignore, item, numElements) = aCircularBuffer.remove();
-#endif
-    }
-    else if ( aCircularBuffer.isEmpty() )
-    {
-#ifdef DO_LOGS
-      // buffer is empty: yield the cpu
+      case circular_buffer::cbBase::cbStatus::REMOVED:
       {
+#ifdef DO_LOGS
         std::lock_guard<std::mutex> mlg(printMx);
         std::clog << "[" << __func__ << "] "
-                  << "EMPTY - num of elements: 0"
+                  << aCircularBuffer.cbStatusString(cbS)
+                  << " - item removed: "
+                  << item
+                  << " - num of elements: "
+                  << numElements
                   << std::endl;
-      }
+        previousCBS = cbS;
 #endif
-      allow(4);
+        allow(0);
+      }
+      break;
+
+      case circular_buffer::cbBase::cbStatus::EMPTY:
+      {
+#ifdef DO_LOGS
+        if ( cbS != previousCBS )
+        {
+          std::lock_guard<std::mutex> mlg(printMx);
+          std::clog << "[" << __func__ << "] "
+                    << aCircularBuffer.cbStatusString(cbS)
+                    << " - num of elements: "
+                    << numElements
+                    << std::endl;
+          previousCBS = cbS;
+        }
+#endif
+        allow(5);
+      }
+      break;
     }
   }
+
   std::lock_guard<std::mutex> mlg(printMx);
   std::clog << "[" << __func__ << "] "
             << "TERMINATED"
@@ -249,10 +278,12 @@ static void taskExample ()
               << "producer result: " << pr << std::endl;
     std::clog << "[" << __func__ << "] "
               << "consumer result: " << cr << std::endl;
+    
+    aCircularBuffer.printData(__func__);
   }
   catch (const std::exception& e)
   {
-    std::cerr << "EXCEPTION: "
+    std::clog << "EXCEPTION: "
               << e.what()
               << std::endl;
   }
@@ -299,7 +330,7 @@ static void threadedExample()
                                      sizeof(cpu_set_t), &consumer_cpuset);
     if (crc != 0)
     {
-      std::cerr << "Error calling pthread_setaffinity_np: " << crc << "\n";
+      std::clog << "Error calling pthread_setaffinity_np: " << crc << "\n";
     }
 
     std::thread pthrd(producerThreadedExample,
@@ -314,19 +345,20 @@ static void threadedExample()
                                      sizeof(cpu_set_t), &producer_cpuset);
     if (prc != 0)
     {
-      std::cerr << "Error calling pthread_setaffinity_np: " << prc << "\n";
+      std::clog << "Error calling pthread_setaffinity_np: " << prc << "\n";
     }
 
     cthrd.join();
     pthrd.join();
+    aCircularBuffer.printData(__func__);
   }
   catch( const std::exception& e )
   {
-    std::cerr << "EXCEPTION: " << e.what() << std::endl;
+    std::clog << "EXCEPTION: " << e.what() << std::endl;
   }
   catch ( ... )
   {
-    std::cerr << "EXCEPTION" << std::endl;
+    std::clog << "EXCEPTION" << std::endl;
   }
 
   std::clog << "[" << __func__ << "] "
