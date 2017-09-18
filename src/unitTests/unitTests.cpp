@@ -17,7 +17,7 @@ using cbtype = uint16_t;
 // Alias for the circular buffer used in the example
 using cb = circular_buffer::cb<cbtype>;
 
-// Test
+// Tests
 TEST(circularBuffer, test_1)
 {
   // Size of the circular buffer used in the test
@@ -37,7 +37,7 @@ TEST(circularBuffer, test_2)
 TEST(circularBuffer, test_3)
 {
   // default size set
-  EXPECT_NO_THROW(cb aCircularBuffer{});
+  EXPECT_NO_THROW(cb aCircularBuffer {});
 }
 
 TEST(circularBuffer, test_3A)
@@ -126,7 +126,7 @@ TEST(circularBuffer, test_9)
   ASSERT_EQ(false, aCircularBuffer.isFull());
   ASSERT_EQ(false, aCircularBuffer.isPopulated());
   ASSERT_EQ(circular_buffer::cbBase::cbStatus::EMPTY, cbS);
-  ASSERT_EQ(cbtype{}, item);
+  ASSERT_EQ(cbtype {}, item);
   ASSERT_EQ(0, numElements);
 }
 
@@ -255,7 +255,7 @@ TEST(circularBuffer, test_14)
   ASSERT_EQ(false, aCircularBuffer.isFull());
   ASSERT_EQ(true, aCircularBuffer.isPopulated());
   ASSERT_EQ(circular_buffer::cbBase::cbStatus::REMOVED, cbS);
-  ASSERT_EQ(cbtype{123}, item);
+  ASSERT_EQ(cbtype {123}, item);
   ASSERT_EQ(1, numElements);
 
   // remove an item
@@ -265,7 +265,7 @@ TEST(circularBuffer, test_14)
   ASSERT_EQ(false, aCircularBuffer.isFull());
   ASSERT_EQ(false, aCircularBuffer.isPopulated());
   ASSERT_EQ(circular_buffer::cbBase::cbStatus::REMOVED, cbS);
-  ASSERT_EQ(cbtype{456}, item);
+  ASSERT_EQ(cbtype {456}, item);
   ASSERT_EQ(0, numElements);
 }
 
@@ -302,7 +302,7 @@ TEST(circularBuffer, test_15)
   ASSERT_EQ(false, aCircularBuffer.isFull());
   ASSERT_EQ(true, aCircularBuffer.isPopulated());
   ASSERT_EQ(circular_buffer::cbBase::cbStatus::REMOVED, cbS);
-  ASSERT_EQ(cbtype{1}, item);
+  ASSERT_EQ(cbtype {1}, item);
   ASSERT_EQ(2, numElements);
 
   // remove an item
@@ -312,7 +312,7 @@ TEST(circularBuffer, test_15)
   ASSERT_EQ(false, aCircularBuffer.isFull());
   ASSERT_EQ(true, aCircularBuffer.isPopulated());
   ASSERT_EQ(circular_buffer::cbBase::cbStatus::REMOVED, cbS);
-  ASSERT_EQ(cbtype{2}, item);
+  ASSERT_EQ(cbtype {2}, item);
   ASSERT_EQ(1, numElements);
 
   // remove an item
@@ -322,7 +322,7 @@ TEST(circularBuffer, test_15)
   ASSERT_EQ(false, aCircularBuffer.isFull());
   ASSERT_EQ(false, aCircularBuffer.isPopulated());
   ASSERT_EQ(circular_buffer::cbBase::cbStatus::REMOVED, cbS);
-  ASSERT_EQ(cbtype{3}, item);
+  ASSERT_EQ(cbtype {3}, item);
   ASSERT_EQ(0, numElements);
 }
 

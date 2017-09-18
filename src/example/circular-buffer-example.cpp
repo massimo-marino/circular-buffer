@@ -105,7 +105,7 @@ static auto producerExample(cb& aCircularBuffer, std::mutex& printMx) noexcept -
   cbtype item {0};
   size_t numElements {};
 
-  while ( item <= LIMIT)
+  while ( item <= LIMIT )
   {
     // try to add an item; get the result and the number of items in the circular
     // buffer after the action
@@ -176,7 +176,7 @@ static auto consumerExample(cb& aCircularBuffer, std::mutex& printMx) noexcept -
     // in the circular buffer after the action
     std::tie(cbS, item, numElements) = aCircularBuffer.remove();
 
-    switch ( cbS )
+    switch (cbS)
     {
       case circular_buffer::cbBase::cbStatus::REMOVED:
       {
@@ -281,7 +281,7 @@ static void taskExample ()
     
     aCircularBuffer.printData(__func__);
   }
-  catch (const std::exception& e)
+  catch( const std::exception& e )
   {
     std::clog << "EXCEPTION: "
               << e.what()
@@ -328,7 +328,7 @@ static void threadedExample()
     CPU_SET(consumerCPU, &consumer_cpuset);
     int crc = pthread_setaffinity_np(cthrd.native_handle(),
                                      sizeof(cpu_set_t), &consumer_cpuset);
-    if (crc != 0)
+    if ( 0 != crc )
     {
       std::clog << "Error calling pthread_setaffinity_np: " << crc << "\n";
     }
@@ -343,7 +343,7 @@ static void threadedExample()
     CPU_SET(producerCPU, &producer_cpuset);
     int prc = pthread_setaffinity_np(pthrd.native_handle(),
                                      sizeof(cpu_set_t), &producer_cpuset);
-    if (prc != 0)
+    if ( 0 != prc )
     {
       std::clog << "Error calling pthread_setaffinity_np: " << prc << "\n";
     }
@@ -356,7 +356,7 @@ static void threadedExample()
   {
     std::clog << "EXCEPTION: " << e.what() << std::endl;
   }
-  catch ( ... )
+  catch( ... )
   {
     std::clog << "EXCEPTION" << std::endl;
   }

@@ -48,7 +48,7 @@ class cbBase
   cbBase& operator= (const cbBase&) = delete;
   cbBase(const cbBase&&) = delete;
   cbBase& operator= (const cbBase&&) = delete;
-  explicit cbBase(const unsigned int cbSize);
+  explicit cbBase(const unsigned int cbSize) noexcept(false);
 
   enum class cbStatus: uint8_t {UNKNOWN, EMPTY, ADDED, REMOVED, FULL};
 
@@ -61,8 +61,8 @@ class cbBase
 
  protected:
   using cbaddret = std::tuple<cbBase::cbStatus, size_t>;
-  static const unsigned int m_defaultSize;
   using statusStringMap = std::map<cbStatus, std::string>;
+  static const unsigned int m_defaultSize;
   static statusStringMap const m_statusStrings;  
   const size_t m_cbSize {m_defaultSize};
   // mutables needed since this is a const class: mutable members of const class
@@ -86,20 +86,20 @@ class cb: public cbBase
   // delegating ctor: default ctor builds a circular buffer with the default size
   cb() : cb(m_defaultSize) {}
   ~cb() = default;
-  cb(const cb&) = delete;
-  cb& operator= (const cb&) = delete;
-  cb(const cb&&) = delete;
-  cb& operator= (const cb&&) = delete;
+  cb(const cb<T>&) = delete;
+  cb<T>& operator= (const cb<T>&) = delete;
+  cb(const cb<T>&&) = delete;
+  cb<T>& operator= (const cb<T>&&) = delete;
 
   // construct a unique pointer that will point to the data of the circular buffer
-  std::unique_ptr<T[]> m_pData{};
+  std::unique_ptr<T[]> m_pData {};
 
   explicit cb(const unsigned int cbSize)
   :
   cbBase(cbSize),
   // allocate an array of T's having size cbSize and store the pointer to it in
   // the unique pointer
-  m_pData ( std::make_unique<T[]>( cbSize ))
+  m_pData (std::make_unique<T[]>(cbSize))
   {}
 
   void printData(const std::string&& caller) const noexcept
@@ -148,10 +148,9 @@ class cb: public cbBase
     }
 
     m_pData.get()[(m_readIndex + m_numElements) % m_cbSize] = item;
-    ++m_numElements;
 
     // until C++17
-    return std::make_tuple(cbBase::cbStatus::ADDED, m_numElements);
+    return std::make_tuple(cbBase::cbStatus::ADDED, ++m_numElements);
   }
 
   // return the first item in the circular buffer, no changes in it
