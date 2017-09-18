@@ -93,7 +93,7 @@ static void printCBStatus(std::string&& callerFun,
 }  // printCBStatus
 #endif
 
-static auto producerExample(cb& aCircularBuffer, std::mutex& printMx) noexcept -> cbtype
+static auto producerExample(cb& aCircularBuffer, std::mutex& printMx) -> cbtype
 {
 #ifdef DO_LOGS
   circular_buffer::cbBase::cbStatus previousCBS {circular_buffer::cbBase::cbStatus::UNKNOWN};
@@ -158,7 +158,7 @@ static auto producerExample(cb& aCircularBuffer, std::mutex& printMx) noexcept -
   return (item - 1);
 }  // producerExample
 
-static auto consumerExample(cb& aCircularBuffer, std::mutex& printMx) noexcept -> cbtype
+static auto consumerExample(cb& aCircularBuffer, std::mutex& printMx) -> cbtype
 {
 #ifdef DO_LOGS
   circular_buffer::cbBase::cbStatus previousCBS {circular_buffer::cbBase::cbStatus::UNKNOWN};
@@ -222,17 +222,17 @@ static auto consumerExample(cb& aCircularBuffer, std::mutex& printMx) noexcept -
   return item;
 }  // consumerExample
 
-static void consumerThreadedExample(cb& aCircularBuffer, std::mutex& printMx) noexcept
+static void consumerThreadedExample(cb& aCircularBuffer, std::mutex& printMx)
 {
   consumerExample(aCircularBuffer, printMx);
 }  // consumerThreadedExample
 
-static void producerThreadedExample(cb& aCircularBuffer, std::mutex& printMx) noexcept
+static void producerThreadedExample(cb& aCircularBuffer, std::mutex& printMx)
 {
   producerExample(aCircularBuffer, printMx);
 }  // producerThreadedExample
 
-static void taskExample ()
+static void taskExample () noexcept
 {
   std::mutex printMx {};
   constexpr unsigned int cbsize {CBSIZE};
@@ -293,7 +293,7 @@ static void taskExample ()
             << std::endl;
 }  // taskExample
 
-static void threadedExample()
+static void threadedExample() noexcept
 {
   std::mutex printMx {};
   constexpr unsigned int cbsize {CBSIZE};

@@ -32,8 +32,6 @@ $ ./unitTests
 
 #### Run Example
 
-On my system (ubuntu 16.04 LTS) `clang++-4.0` fails to compile the example code when `-std=c++1z`.
-
 Remove `-DDO_LOGS` from `CMAKE_CXX_FLAGS` in the cmake file to see no logs printed at run-time.
 
 ```bash
