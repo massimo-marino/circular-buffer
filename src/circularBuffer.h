@@ -86,10 +86,10 @@ class cb: public cbBase
   // delegating ctor: default ctor builds a circular buffer with the default size
   cb() : cb(m_defaultSize) {}
   ~cb() = default;
-  cb(const cb<T>&) = delete;
-  cb<T>& operator= (const cb<T>&) = delete;
-  cb(const cb<T>&&) = delete;
-  cb<T>& operator= (const cb<T>&&) = delete;
+  cb(const cb&) = delete;
+  cb& operator= (const cb&) = delete;
+  cb(const cb&&) = delete;
+  cb& operator= (const cb&&) = delete;
 
   // construct a unique pointer that will point to the data of the circular buffer
   std::unique_ptr<T[]> m_pData {};
