@@ -3,7 +3,7 @@ C++ implementation of a circular buffer
 
 #### Requirements
 
-The cmake files compiles with `-std=c++14` (but it would be fine also with `-std=c++1z`).
+The cmake files compiles with `-std=c++1z` (but it would be fine also with `-std=c++14`).
 It does not compile with `-std=c++11` since `std::make_unique()` is used.
 
 Cmake file uses `clang++-4.0` by default: install clang 4.0, or another release and in this case change the cmake file.

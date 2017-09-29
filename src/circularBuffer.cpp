@@ -23,6 +23,7 @@
  * Created on April 12, 2017, 8:17 PM
  */
 #include "circularBuffer.h"
+#include <stdexcept>
 ////////////////////////////////////////////////////////////////////////////////
 namespace circular_buffer
 {

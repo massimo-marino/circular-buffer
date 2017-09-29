@@ -13,7 +13,7 @@ SET (CMAKE_CXX_COMPILER "clang++-4.0")
 SET (CLANG_CXX_FLAGS "-Weverything -Wno-c++98-compat -fno-assume-sane-operator-new")
 #### settings for clang
 
-SET (CMAKE_CXX_FLAGS "${CLANG_CXX_FLAGS} -std=c++14 -flto -mtune=native -march=native -m64 -Ofast -ffast-math -pthread -pedantic -pedantic-errors -Wall -Weffc++ -Wextra -Wfatal-errors -I/usr/include -I. -lm")
+SET (CMAKE_CXX_FLAGS "${CLANG_CXX_FLAGS} -std=c++1z -flto -mtune=native -march=native -m64 -Ofast -ffast-math -pthread -pedantic -pedantic-errors -Wall -Weffc++ -Wextra -Wfatal-errors -I/usr/include -I. -lm")
 
 SET (CMAKE_LIBRARY_PATH "/usr/lib/x86_64-linux-gnu")
 

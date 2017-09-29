@@ -28,11 +28,8 @@
 
 #include <iostream>
 #include <mutex>
-#include <string>
 #include <map>
-#include <tuple>
 #include <memory>
-#include <stdexcept>
 ////////////////////////////////////////////////////////////////////////////////
 namespace circular_buffer
 {

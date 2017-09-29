@@ -24,12 +24,8 @@
  */
 
 #include "circularBuffer.h"
-#include <cstdint>
-#include <iostream>
 #include <thread>
 #include <future>
-#include <exception>
-#include <algorithm>
 ////////////////////////////////////////////////////////////////////////////////
 // Multi-threaded Producer/Consumer example
 // This example runs with numerical types only: bool, char, short int, int, ...
@@ -268,7 +264,7 @@ static void taskExample () noexcept
 //      std::this_thread::yield(); // hint to reschedule to the next thread
 //    }
 //  }
-  
+
   // wait for all loops to be finished and process any exception
   try
   {
