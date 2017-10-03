@@ -1,7 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/* 
+ * File:   unitTests.cpp
+ * Author: massimo
+ * 
+ * Created on April 12, 2017, 8:17 PM
  */
 
 #include "../circularBuffer.h"
@@ -325,8 +326,3 @@ TEST(circularBuffer, test_15)
   ASSERT_EQ(cbtype {3}, item);
   ASSERT_EQ(0, numElements);
 }
-
-//int main(int argc, char **argv) {
-//  ::testing::InitGoogleTest(&argc, argv);
-//  return RUN_ALL_TESTS();
-//}
