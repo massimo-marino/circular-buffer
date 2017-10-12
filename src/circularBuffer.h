@@ -19,7 +19,7 @@ namespace circular_buffer
 // the template parameters
 class cbBase
 {
- public:
+ protected:
   // delegating ctor: default ctor sets the circular buffer's size to the default size
   cbBase() : cbBase(m_defaultSize) {}
   ~cbBase() = default;
@@ -29,6 +29,7 @@ class cbBase
   cbBase& operator= (const cbBase&&) = delete;
   explicit cbBase(const unsigned int cbSize) noexcept(false);
 
+ public:
   enum class cbStatus: uint8_t {UNKNOWN, EMPTY, ADDED, REMOVED, FULL};
 
   unsigned int getNumElements() const noexcept;
@@ -57,8 +58,9 @@ class cbBase
 template <typename T = int>
 class cb final : public cbBase
 {
- private:
   using cbremret = std::tuple<cbBase::cbStatus, T, size_t>;
+
+ private:
   const T m_noItem {};
 
  public:
