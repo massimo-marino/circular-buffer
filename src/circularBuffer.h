@@ -22,10 +22,9 @@ class cbBase
  protected:
   // delegating ctor: default ctor sets the circular buffer's size to the default size
   cbBase() : cbBase(m_defaultSize) {}
-  ~cbBase() = default;
+  virtual ~cbBase();
   // we don't want these objects allocated on the heap
   void* operator new(std::size_t) = delete;
-  void operator delete(void*) = delete;
   cbBase(const cbBase&) = delete;
   cbBase& operator= (const cbBase&) = delete;
   cbBase(const cbBase&&) = delete;
@@ -72,7 +71,6 @@ class cb final : public cbBase
   ~cb() = default;
   // we don't want these objects allocated on the heap
   void* operator new(std::size_t) = delete;
-  void operator delete(void*) = delete;
   cb(const cb&) = delete;
   cb& operator= (const cb&) = delete;
   cb(const cb&&) = delete;
@@ -120,7 +118,7 @@ class cb final : public cbBase
     std::cout << "[" << __func__ << "] "
               << "[" << caller << "] "
               << "---data end---\n"
-              << std::endl;
+              << '\n';
   }
 
   // add an item in the circular buffer, if not full

@@ -26,6 +26,9 @@ cbBase::statusStringMap const cbBase::m_statusStrings
 #pragma clang diagnostic pop
 // END: ignore the warnings when compiled with clang up to here
 
+cbBase::~cbBase()
+{}
+
 cbBase::cbBase(const unsigned int cbSize) noexcept(false)
 :
 m_cbSize(cbSize)
