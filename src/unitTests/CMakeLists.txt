@@ -6,18 +6,30 @@ PROJECT( circular-buffer-unit-tests )
 #SET (CMAKE_CXX_COMPILER g++)
 #SET (CLANG_CXX_FLAGS "-Wno-unknown-pragmas")
 #### settings for g++
-
+################################################################################
+#### settings for clang 4.0
+#SET (CMAKE_CXX_COMPILER "clang++-4.0")
+#SET (CLANG_CXX_FLAGS "-Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -fno-assume-sane-operator-new")
+####SET (CLANG_CXX_FLAGS "-Weverything -Wno-c++98-compat -fno-assume-sane-operator-new -fsanitize=undefined")
 #### settings for clang
-SET (CMAKE_CXX_COMPILER "clang++-4.0")
-#SET (CLANG_CXX_FLAGS "-Weverything -Wno-c++98-compat -fno-assume-sane-operator-new -fsanitize=undefined")
-SET (CLANG_CXX_FLAGS "-Weverything -Wno-c++98-compat -fno-assume-sane-operator-new")
+
+#SET (CMAKE_CXX_FLAGS "${CLANG_CXX_FLAGS} -flto -std=c++1z -mtune=native -march=native -m64 -Ofast -ffast-math -pthread -pedantic -pedantic-errors -Wall -Weffc++ -Wextra -Wfatal-errors -lgtest_dll -lgtest_main")
+#SET (CMAKE_LIBRARY_PATH "/usr/lib/x86_64-linux-gnu")
+################################################################################
+#### settings for clang 5.0
+SET (CMAKE_C_COMPILER "/opt/clang+llvm-5.0.0-linux-x86_64-ubuntu16.04/bin/clang")
+SET (CMAKE_CXX_COMPILER "/opt/clang+llvm-5.0.0-linux-x86_64-ubuntu16.04/bin/clang++")
+SET (CLANG_CXX_FLAGS "-Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -fno-assume-sane-operator-new")
+####SET (CLANG_CXX_FLAGS "-Weverything -Wno-c++98-compat -fno-assume-sane-operator-new -fsanitize=undefined")
 #### settings for clang
 
-SET (CMAKE_CXX_FLAGS "${CLANG_CXX_FLAGS} -std=c++1z -flto -mtune=native -march=native -m64 -Ofast -ffast-math -pthread -pedantic -pedantic-errors -Wall -Weffc++ -Wextra -Wfatal-errors -I/usr/include -I/usr/local/include -I. -I.. -lm -lrt -ldl -lgtest_dll -lgtest_main")
+SET (CMAKE_CXX_FLAGS "${CLANG_CXX_FLAGS} -DCMAKE_AR=/opt/clang+llvm-5.0.0-linux-x86_64-ubuntu16.04/bin/llvm-ar -DCMAKE_RANLIB=/opt/clang+llvm-5.0.0-linux-x86_64-ubuntu16.04/bin/llvm-ranlib -DLLVM_ENABLE_LTO=Thin -DLLVM_PARALLEL_LINK_JOBS=1 -std=c++17 -mtune=native -march=native -m64 -Ofast -ffast-math -pthread -pedantic -pedantic-errors -Wall -Weffc++ -Wextra -Wfatal-errors -lgtest_dll -lgtest_main")
 
-SET (CMAKE_LIBRARY_PATH "/usr/lib/x86_64-linux-gnu")
+SET (CMAKE_INCLUDE_PATH "/opt/clang+llvm-5.0.0-linux-x86_64-ubuntu16.04/include/c++/v1 /opt/clang+llvm-5.0.0-linux-x86_64-ubuntu16.04/include/")
+SET (CMAKE_LIBRARY_PATH "/opt/clang+llvm-5.0.0-linux-x86_64-ubuntu16.04/lib /usr/lib/x86_64-linux-gnu")
+################################################################################
 
-SET( CMAKE_VERBOSE_MAKEFILE on )
+SET (CMAKE_VERBOSE_MAKEFILE on )
 
 # ------------------------- Begin Generic CMake Variable Logging ------------------
 

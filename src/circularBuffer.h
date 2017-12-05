@@ -4,9 +4,7 @@
  *
  * Created on April 12, 2017, 8:17 PM
  */
-
-#ifndef CCIRCULARBUFFER_H
-#define CCIRCULARBUFFER_H
+#pragma once
 
 #include <iostream>
 #include <mutex>
@@ -32,7 +30,7 @@ class cbBase
   explicit cbBase(const unsigned int cbSize) noexcept(false);
 
  public:
-  enum class cbStatus: uint8_t {UNKNOWN, EMPTY, ADDED, REMOVED, FULL};
+  enum class cbStatus : uint8_t {UNKNOWN, EMPTY, ADDED, REMOVED, FULL};
 
   unsigned int getNumElements() const noexcept;
   bool isEmpty() const noexcept;
@@ -44,7 +42,7 @@ class cbBase
  protected:
   using cbaddret = std::tuple<cbBase::cbStatus, size_t>;
   using statusStringMap = std::map<cbStatus, std::string>;
-  static const unsigned int m_defaultSize;
+  static inline const unsigned int m_defaultSize {3};
   static statusStringMap const m_statusStrings;  
   const size_t m_cbSize {m_defaultSize};
   // mutables needed since this is a const class: mutable members of const class
@@ -79,7 +77,8 @@ class cb final : public cbBase
   // construct a unique pointer that will point to the data of the circular buffer
   std::unique_ptr<T[]> m_pData {};
 
-  explicit cb(const unsigned int cbSize)
+  explicit
+  cb(const unsigned int cbSize)
   :
   cbBase(cbSize),
   // allocate an array of T's having size cbSize and store the pointer to it in
@@ -87,7 +86,8 @@ class cb final : public cbBase
   m_pData (std::make_unique<T[]>(cbSize))
   {}
 
-  void printData(const std::string&& caller) const noexcept
+  void
+  printData(const std::string&& caller) const noexcept
   {    
     std::lock_guard<std::mutex> lg(m_mx);
 
@@ -95,7 +95,7 @@ class cb final : public cbBase
               << "[" << caller << "] "
               << "---data start---\n";
 
-    for (unsigned int i = 0; i < m_cbSize; ++i)
+    for (unsigned int i {0}; i < m_cbSize; ++i)
     {
       if ( m_noItem != m_pData.get()[i] || m_readIndex == i)
       {
@@ -122,7 +122,8 @@ class cb final : public cbBase
   }
 
   // add an item in the circular buffer, if not full
-  cbaddret add(const T& item) const noexcept
+  cbaddret
+  add(const T& item) const noexcept
   {
     std::lock_guard<std::mutex> lg(m_mx);
 
@@ -139,13 +140,15 @@ class cb final : public cbBase
   }
 
   // return the first item in the circular buffer, no changes in it
-  T getFront() const noexcept
+  T
+  getFront() const noexcept
   {
     return m_pData.get()[m_readIndex];
   }
 
   // remove the first item from the circular buffer, if not empty
-  cbremret remove() const noexcept
+  cbremret
+  remove() const noexcept
   {
     std::lock_guard<std::mutex> lg(m_mx);
 
@@ -165,5 +168,3 @@ class cb final : public cbBase
   }
 };  // class cb
 }  // namespace circular_buffer
-
-#endif  // CCIRCULARBUFFER_H

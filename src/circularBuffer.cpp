@@ -5,12 +5,9 @@
  * Created on April 12, 2017, 8:17 PM
  */
 #include "circularBuffer.h"
-#include <stdexcept>
 ////////////////////////////////////////////////////////////////////////////////
 namespace circular_buffer
 {
-const unsigned int cbBase::m_defaultSize {3};
-
 // BEGIN: ignore the warnings listed below when compiled with clang from here
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wexit-time-destructors"
@@ -39,50 +36,59 @@ m_cbSize(cbSize)
   }
 }
 
-size_t cbBase::size() const noexcept
+size_t
+cbBase::size() const noexcept
 {
   return m_cbSize;
 }
 
-bool cbBase::_isEmpty() const noexcept
+bool
+cbBase::_isEmpty() const noexcept
 {
   return (0 == m_numElements);
 }
 
-bool cbBase::_isFull() const noexcept
+bool
+cbBase::_isFull() const noexcept
 {
   return (m_cbSize == m_numElements);
 }
 
-unsigned int cbBase::getNumElements() const noexcept
+unsigned int
+cbBase::getNumElements() const noexcept
 {
   std::lock_guard<std::mutex> mlg(m_mx);
 
   return m_numElements;
 }
 
-bool cbBase::isEmpty() const noexcept
+bool
+cbBase::isEmpty() const noexcept
 {
   std::lock_guard<std::mutex> mlg(m_mx);
 
   return (0 == m_numElements);
 }
 
-bool cbBase::isFull() const noexcept
+bool
+cbBase::isFull() const noexcept
 {
   std::lock_guard<std::mutex> mlg(m_mx);
 
   return (m_cbSize == m_numElements);
 }
 
-bool cbBase::isPopulated() const noexcept
+bool
+cbBase::isPopulated() const noexcept
 {
   std::lock_guard<std::mutex> mlg(m_mx);
 
   return (m_numElements > 0);
 }
 
-const std::string& cbBase::cbStatusString(const cbBase::cbStatus cbs) const noexcept
+const
+std::string&
+cbBase::cbStatusString(const cbBase::cbStatus cbs) const noexcept
 {
   return m_statusStrings.at(cbs);
 }

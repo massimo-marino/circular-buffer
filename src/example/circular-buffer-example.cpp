@@ -6,13 +6,12 @@
  */
 
 #include "circularBuffer.h"
-#include <thread>
 #include <future>
-#include <iostream>
 #include <sstream>
 ////////////////////////////////////////////////////////////////////////////////
 // Multi-threaded Producer/Consumer example
 // This example runs with numerical types only: bool, char, short int, int, ...
+
 // The data type stored in the circular buffer
 using cbtype = uint16_t;
 
@@ -22,15 +21,17 @@ using cb = circular_buffer::cb<cbtype>;
 static constexpr unsigned int CBSIZE {50};
 
 // Number of items produced by the producer thread
-static constexpr cbtype MAX_LIMIT_DEFAULT{static_cast<cbtype>(20'000)};
+static constexpr cbtype MAX_LIMIT_DEFAULT {static_cast<cbtype>(20'000)};
 // in order to avoid overflow, take the min between the max limit default
 // value and the max value for the type cbtype
 static constexpr cbtype LIMIT {std::min(MAX_LIMIT_DEFAULT, std::numeric_limits<cbtype>::max())};
 
-static void allow (const int64_t& d = 0) noexcept
+static
+void
+allow(const int64_t& d = 0) noexcept
 {
   std::this_thread::yield();
-  if ( 0 == d)
+  if ( 0 == d )
   {
     return;
   }
@@ -49,8 +50,10 @@ struct pclog : public std::stringstream
   }
 };
 
-static void printCBStatus(std::string&& callerFun,
-                          const cb& aCircularBuffer) noexcept
+static
+void
+printCBStatus(std::string&& callerFun,
+              const cb& aCircularBuffer) noexcept
 {
   pclog{} << "[" << callerFun << "] "
           << "aCircularBuffer size: "
@@ -62,22 +65,25 @@ static void printCBStatus(std::string&& callerFun,
           << "\n"
           << "[" << callerFun << "] "
           << "aCircularBuffer is empty: "
-          << (aCircularBuffer.isEmpty() ? "TRUE" : "FALSE")
+          << std::boolalpha
+          << aCircularBuffer.isEmpty()
           << "\n"
           << "[" << callerFun << "] "
           << "aCircularBuffer is full: "
-          << (aCircularBuffer.isFull() ? "TRUE" : "FALSE")
+          << aCircularBuffer.isFull()
           << "\n"
           << "[" << callerFun << "] "
           << "aCircularBuffer is populated: "
-          << (aCircularBuffer.isPopulated() ? "TRUE" : "FALSE")
+          << aCircularBuffer.isPopulated()
           << std::endl;
 
   aCircularBuffer.printData(std::forward<std::string>(callerFun));
 }  // printCBStatus
 #endif
 
-static auto producerExample(cb& aCircularBuffer) -> cbtype
+static
+auto
+producerExample(cb& aCircularBuffer) -> cbtype
 {
 #ifdef DO_LOGS
   circular_buffer::cbBase::cbStatus previousCBS {circular_buffer::cbBase::cbStatus::UNKNOWN};
@@ -139,7 +145,9 @@ static auto producerExample(cb& aCircularBuffer) -> cbtype
   return (item - 1);
 }  // producerExample
 
-static auto consumerExample(cb& aCircularBuffer) -> cbtype
+static
+auto
+consumerExample(cb& aCircularBuffer) -> cbtype
 {
 #ifdef DO_LOGS
   circular_buffer::cbBase::cbStatus previousCBS {circular_buffer::cbBase::cbStatus::UNKNOWN};
@@ -198,17 +206,23 @@ static auto consumerExample(cb& aCircularBuffer) -> cbtype
   return item;
 }  // consumerExample
 
-static void consumerThreadedExample(cb& aCircularBuffer)
+static
+void
+consumerThreadedExample(cb& aCircularBuffer)
 {
   consumerExample(aCircularBuffer);
 }  // consumerThreadedExample
 
-static void producerThreadedExample(cb& aCircularBuffer)
+static
+void
+producerThreadedExample(cb& aCircularBuffer)
 {
   producerExample(aCircularBuffer);
 }  // producerThreadedExample
 
-static void taskExample () noexcept
+static
+void
+taskExample () noexcept
 {
   constexpr unsigned int cbsize {CBSIZE};
   cb aCircularBuffer(cbsize);
@@ -252,12 +266,14 @@ static void taskExample () noexcept
           << std::endl;
 }  // taskExample
 
-static void threadedExample() noexcept
+static
+void
+threadedExample() noexcept
 {
   constexpr unsigned int cbsize {CBSIZE};
   cb aCircularBuffer(cbsize);
 
-  auto numCPUs = std::thread::hardware_concurrency();
+  auto numCPUs {std::thread::hardware_concurrency()};
   auto producerCPU {1};
   auto consumerCPU {1};
   if ( numCPUs > 1 )
@@ -283,8 +299,8 @@ static void threadedExample() noexcept
     cpu_set_t consumer_cpuset;
     CPU_ZERO(&consumer_cpuset);
     CPU_SET(consumerCPU, &consumer_cpuset);
-    int crc = pthread_setaffinity_np(cthrd.native_handle(),
-                                     sizeof(cpu_set_t), &consumer_cpuset);
+    int crc {pthread_setaffinity_np(cthrd.native_handle(),
+                                    sizeof(cpu_set_t), &consumer_cpuset)};
     if ( 0 != crc )
     {
       pclog{} << "Error calling pthread_setaffinity_np: " << crc << "\n";
@@ -297,8 +313,8 @@ static void threadedExample() noexcept
     cpu_set_t producer_cpuset;
     CPU_ZERO(&producer_cpuset);
     CPU_SET(producerCPU, &producer_cpuset);
-    int prc = pthread_setaffinity_np(pthrd.native_handle(),
-                                     sizeof(cpu_set_t), &producer_cpuset);
+    int prc {pthread_setaffinity_np(pthrd.native_handle(),
+                                    sizeof(cpu_set_t), &producer_cpuset)};
     if ( 0 != prc )
     {
       pclog{} << "Error calling pthread_setaffinity_np: " << prc << "\n";
@@ -322,7 +338,8 @@ static void threadedExample() noexcept
           << std::endl;
 }  // threadedExample
 
-auto main() -> int
+auto
+main() -> int
 {
   // this example only deals with integral or floating points types
   static_assert( (   (false == std::is_floating_point<cbtype>::value)
