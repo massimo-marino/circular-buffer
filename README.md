@@ -1,5 +1,5 @@
 # circular-buffer
-C++ implementation of a circular buffer
+C++17 implementation of a circular buffer
 
 #### Requirements
 
