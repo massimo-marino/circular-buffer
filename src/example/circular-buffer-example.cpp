@@ -16,7 +16,8 @@
 using cbtype = uint16_t;
 
 // Alias for the circular buffer templated type used in the example
-using cb = circular_buffer::cb<cbtype>;
+using cb_t = circular_buffer::cb<cbtype>;
+using cb_shptr_t = std::shared_ptr<cb_t>;
 // Size of the circular buffer used in the example
 static constexpr unsigned int CBSIZE {50};
 
@@ -53,7 +54,7 @@ struct pclog : public std::stringstream
 static
 void
 printCBStatus(std::string&& callerFun,
-              const cb& aCircularBuffer) noexcept
+              const cb_t& aCircularBuffer) noexcept
 {
   pclog{} << "[" << callerFun << "] "
           << "aCircularBuffer size: "
@@ -83,23 +84,23 @@ printCBStatus(std::string&& callerFun,
 
 static
 auto
-producerExample(cb& aCircularBuffer) -> cbtype
+producerExample(const cb_shptr_t& cb_shptr) -> cbtype
 {
 #ifdef DO_LOGS
   circular_buffer::cbBase::cbStatus previousCBS {circular_buffer::cbBase::cbStatus::UNKNOWN};
 
-  printCBStatus(__func__, aCircularBuffer);
+  printCBStatus(__func__, *cb_shptr);
 #endif
 
   circular_buffer::cbBase::cbStatus cbS {circular_buffer::cbBase::cbStatus::UNKNOWN};
   cbtype item {0};
-  size_t numElements {};
+  size_t numElements {0};
 
   while ( item <= LIMIT )
   {
     // try to add an item; get the result and the number of items in the circular
     // buffer after the action
-    std::tie(cbS, numElements) = aCircularBuffer.add(item);
+    std::tie(cbS, numElements) = cb_shptr->add(item);
 
     switch (cbS)
     {
@@ -107,7 +108,7 @@ producerExample(cb& aCircularBuffer) -> cbtype
       {
 #ifdef DO_LOGS
         pclog{} << "[" << __func__ << "] "
-                << aCircularBuffer.cbStatusString(cbS)
+                << cb_shptr->cbStatusString(cbS)
                 << " - item: "
                 << item
                 << " - num of elements: "
@@ -126,7 +127,7 @@ producerExample(cb& aCircularBuffer) -> cbtype
         if ( cbS != previousCBS )
         {
           pclog{} << "[" << __func__ << "] "
-                  << aCircularBuffer.cbStatusString(cbS)
+                  << cb_shptr->cbStatusString(cbS)
                   << " - num of elements: "
                   << numElements
                   << std::endl;
@@ -142,26 +143,26 @@ producerExample(cb& aCircularBuffer) -> cbtype
   pclog{} << "[" << __func__ << "] "
           << "TERMINATED"
           << std::endl;
-  return (item - 1);
+  return (item - static_cast<cbtype>(1));
 }  // producerExample
 
 static
 auto
-consumerExample(cb& aCircularBuffer) -> cbtype
+consumerExample(const cb_shptr_t& cb_shptr) -> cbtype
 {
 #ifdef DO_LOGS
   circular_buffer::cbBase::cbStatus previousCBS {circular_buffer::cbBase::cbStatus::UNKNOWN};
 #endif
 
   circular_buffer::cbBase::cbStatus cbS {circular_buffer::cbBase::cbStatus::UNKNOWN};
-  cbtype item {};
-  size_t numElements {};
+  cbtype item {0};
+  size_t numElements {0};
   
   while ( item != LIMIT )
   {
     // try to remove an item; get the result, the item, and the number of items
     // in the circular buffer after the action
-    std::tie(cbS, item, numElements) = aCircularBuffer.remove();
+    std::tie(cbS, item, numElements) = cb_shptr->remove();
 
     switch (cbS)
     {
@@ -169,7 +170,7 @@ consumerExample(cb& aCircularBuffer) -> cbtype
       {
 #ifdef DO_LOGS
         pclog{} << "[" << __func__ << "] "
-                << aCircularBuffer.cbStatusString(cbS)
+                << cb_shptr->cbStatusString(cbS)
                 << " - item removed: "
                 << item
                 << " - num of elements: "
@@ -187,7 +188,7 @@ consumerExample(cb& aCircularBuffer) -> cbtype
         if ( cbS != previousCBS )
         {
           pclog{} << "[" << __func__ << "] "
-                  << aCircularBuffer.cbStatusString(cbS)
+                  << cb_shptr->cbStatusString(cbS)
                   << " - num of elements: "
                   << numElements
                   << std::endl;
@@ -208,16 +209,16 @@ consumerExample(cb& aCircularBuffer) -> cbtype
 
 static
 void
-consumerThreadedExample(cb& aCircularBuffer)
+consumerThreadedExample(const cb_shptr_t& cb_shptr)
 {
-  consumerExample(aCircularBuffer);
+  consumerExample(cb_shptr);
 }  // consumerThreadedExample
 
 static
 void
-producerThreadedExample(cb& aCircularBuffer)
+producerThreadedExample(const cb_shptr_t& cb_shptr)
 {
-  producerExample(aCircularBuffer);
+  producerExample(cb_shptr);
 }  // producerThreadedExample
 
 static
@@ -225,7 +226,7 @@ void
 taskExample () noexcept
 {
   constexpr unsigned int cbsize {CBSIZE};
-  cb aCircularBuffer(cbsize);
+  cb_shptr_t aCircularBuffer_sp = std::make_shared<cb_t>(cbsize);
 
   auto num_cpus = std::thread::hardware_concurrency();
   pclog{} << "[" << __func__ << "] "
@@ -237,10 +238,10 @@ taskExample () noexcept
   // tasks launched asynchronously
   std::future<cbtype> cf = std::async(std::launch::async,
                                       consumerExample,
-                                      std::ref(aCircularBuffer));
+                                      aCircularBuffer_sp);
   std::future<cbtype> pf = std::async(std::launch::async,
                                       producerExample,
-                                      std::ref(aCircularBuffer));
+                                      aCircularBuffer_sp);
 
   // wait for all loops to be finished and process any exception
   try
@@ -251,8 +252,8 @@ taskExample () noexcept
             << "producer result: " << pr << std::endl;
     pclog{} << "[" << __func__ << "] "
             << "consumer result: " << cr << std::endl;
-    
-    aCircularBuffer.printData(__func__);
+
+    aCircularBuffer_sp->printData(__func__);
   }
   catch( const std::exception& e )
   {
@@ -271,7 +272,7 @@ void
 threadedExample() noexcept
 {
   constexpr unsigned int cbsize {CBSIZE};
-  cb aCircularBuffer(cbsize);
+  cb_shptr_t aCircularBuffer_sp = std::make_shared<cb_t>(cbsize);
 
   auto numCPUs {std::thread::hardware_concurrency()};
   auto producerCPU {1};
@@ -292,8 +293,7 @@ threadedExample() noexcept
 
   try
   {
-    std::thread cthrd(consumerThreadedExample,
-                      std::ref(aCircularBuffer));
+    std::thread cthrd(consumerThreadedExample, aCircularBuffer_sp);
     // Create a cpu_set_t object representing a set of CPUs.
     // Clear it and mark only a CPU as set.
     cpu_set_t consumer_cpuset;
@@ -306,8 +306,7 @@ threadedExample() noexcept
       pclog{} << "Error calling pthread_setaffinity_np: " << crc << "\n";
     }
 
-    std::thread pthrd(producerThreadedExample,
-                      std::ref(aCircularBuffer));
+    std::thread pthrd(producerThreadedExample, aCircularBuffer_sp);
     // Create a cpu_set_t object representing a set of CPUs.
     // Clear it and mark only a CPU as set.
     cpu_set_t producer_cpuset;
@@ -322,7 +321,7 @@ threadedExample() noexcept
 
     cthrd.join();
     pthrd.join();
-    aCircularBuffer.printData(__func__);
+    aCircularBuffer_sp->printData(__func__);
   }
   catch( const std::exception& e )
   {
@@ -343,7 +342,7 @@ main() -> int
 {
   // this example only deals with integral or floating points types
   static_assert( (   (false == std::is_floating_point<cbtype>::value)
-                  || (false == std::numeric_limits<cbtype>::is_integer)),
+                  || (false == std::is_integral<cbtype>::value)),
                  "expected integral or floating point types");
   
   pclog{} << "\n\n[" << __func__ << "] "

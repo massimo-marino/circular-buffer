@@ -20,36 +20,34 @@ class cbBase
  protected:
   // delegating ctor: default ctor sets the circular buffer's size to the default size
   cbBase() : cbBase(m_defaultSize) {}
-  virtual ~cbBase();
-  // we don't want these objects allocated on the heap
-  void* operator new(std::size_t) = delete;
+
   cbBase(const cbBase&) = delete;
   cbBase& operator= (const cbBase&) = delete;
   cbBase(const cbBase&&) = delete;
   cbBase& operator= (const cbBase&&) = delete;
-  explicit cbBase(const unsigned int cbSize) noexcept(false);
+  explicit cbBase(unsigned long cbSize) noexcept(false);
 
  public:
   enum class cbStatus : uint8_t {UNKNOWN, EMPTY, ADDED, REMOVED, FULL};
 
-  unsigned int getNumElements() const noexcept;
+  unsigned long getNumElements() const noexcept;
   bool isEmpty() const noexcept;
   bool isFull() const noexcept;
   bool isPopulated() const noexcept;
-  const std::string& cbStatusString(const cbBase::cbStatus cbs) const noexcept;
+  const std::string& cbStatusString(cbBase::cbStatus cbs) const noexcept(false);
   size_t size() const noexcept;
 
  protected:
   using cbaddret = std::tuple<cbBase::cbStatus, size_t>;
   using statusStringMap = std::map<cbStatus, std::string>;
-  static inline const unsigned int m_defaultSize {3};
+  static inline const unsigned long m_defaultSize {3};
   static statusStringMap const m_statusStrings;  
   const size_t m_cbSize {m_defaultSize};
   // mutables needed since this is a const class: mutable members of const class
   // instances are modifiable
   mutable std::mutex m_mx {};
-  mutable unsigned int m_readIndex {0};
-  mutable unsigned int m_numElements {0}; 
+  mutable unsigned long m_readIndex {0};
+  mutable unsigned long m_numElements {0};
   bool _isEmpty() const noexcept;
   bool _isFull() const noexcept;
 };  // class cbBase
@@ -64,11 +62,16 @@ class cb final : public cbBase
   const T m_noItem {};
 
  public:
-  // delegating ctor: default ctor builds a circular buffer with the default size
-  cb() : cb(m_defaultSize) {}
-  ~cb() = default;
   // we don't want these objects allocated on the heap
   void* operator new(std::size_t) = delete;
+  void* operator new[](std::size_t) = delete;
+
+  void operator delete(void*) = delete;
+  void operator delete[](void*) = delete;
+
+  // delegating ctor: default ctor builds a circular buffer with the default size
+  cb() : cb(m_defaultSize) {}
+
   cb(const cb&) = delete;
   cb& operator= (const cb&) = delete;
   cb(const cb&&) = delete;
@@ -78,7 +81,7 @@ class cb final : public cbBase
   std::unique_ptr<T[]> m_pData {};
 
   explicit
-  cb(const unsigned int cbSize)
+  cb(const unsigned long cbSize)
   :
   cbBase(cbSize),
   // allocate an array of T's having size cbSize and store the pointer to it in
@@ -95,7 +98,7 @@ class cb final : public cbBase
               << "[" << caller << "] "
               << "---data start---\n";
 
-    for (unsigned int i {0}; i < m_cbSize; ++i)
+    for (unsigned long i {0}; i < m_cbSize; ++i)
     {
       if ( m_noItem != m_pData.get()[i] || m_readIndex == i)
       {
@@ -127,7 +130,7 @@ class cb final : public cbBase
   {
     std::lock_guard<std::mutex> lg(m_mx);
 
-    if ( true == _isFull() )
+    if ( _isFull() )
     {
       // until C++17
       return std::make_tuple(cbBase::cbStatus::FULL, m_cbSize);
@@ -152,7 +155,7 @@ class cb final : public cbBase
   {
     std::lock_guard<std::mutex> lg(m_mx);
 
-    if ( true == _isEmpty() )
+    if ( _isEmpty() )
     {
       // until C++17
       return std::make_tuple(cbBase::cbStatus::EMPTY, m_noItem, 0);

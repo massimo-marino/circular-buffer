@@ -16,7 +16,7 @@ using namespace ::testing;
 using cbtype = uint16_t;
 
 // Alias for the circular buffer used in the example
-using cb = circular_buffer::cb<cbtype>;
+using cb_t = circular_buffer::cb<cbtype>;
 
 // Tests
 TEST(circularBuffer, test_1)
@@ -24,7 +24,7 @@ TEST(circularBuffer, test_1)
   // Size of the circular buffer used in the test
   constexpr unsigned int cbsize {0};
 
-  EXPECT_THROW(cb aCircularBuffer(cbsize), std::invalid_argument);
+  EXPECT_THROW(cb_t aCircularBuffer(cbsize), std::invalid_argument);
 }
 
 TEST(circularBuffer, test_2)
@@ -32,29 +32,38 @@ TEST(circularBuffer, test_2)
   // Size of the circular buffer used in the test
   constexpr unsigned int cbsize {100};
 
-  EXPECT_NO_THROW(cb aCircularBuffer(cbsize));
+  EXPECT_NO_THROW(cb_t aCircularBuffer(cbsize));
 }
 
 TEST(circularBuffer, test_3)
 {
   // default size set
-  EXPECT_NO_THROW(cb aCircularBuffer {});
+  EXPECT_NO_THROW(cb_t aCircularBuffer {});
 }
 
 TEST(circularBuffer, test_3A)
 {
   // default size set
-  cb aCircularBuffer{};
+  cb_t aCircularBuffer{};
 
   // the default size is a private attribute of class cbBase set to 3
   ASSERT_EQ(3, aCircularBuffer.size());
+}
+
+TEST(circularBuffer, test_3B)
+{
+  // Size of the circular buffer used in the test
+  constexpr unsigned int cbsize {1230};
+  auto shptr {std::make_shared<cb_t>(cbsize)};
+
+  EXPECT_EQ(cbsize, shptr->size());
 }
 
 TEST(circularBuffer, test_4)
 {
   // Size of the circular buffer used in the test
   constexpr unsigned int cbsize {100};
-  cb aCircularBuffer{cbsize};
+  cb_t aCircularBuffer{cbsize};
 
   ASSERT_EQ(cbsize, aCircularBuffer.size());
   ASSERT_EQ(cbtype{}, aCircularBuffer.getFront());
@@ -64,7 +73,7 @@ TEST(circularBuffer, test_4A)
 {
   // Size of the circular buffer used in the test
   constexpr unsigned int cbsize {100};
-  cb aCircularBuffer(cbsize);
+  cb_t aCircularBuffer(cbsize);
 
   ASSERT_EQ(cbsize, aCircularBuffer.size());
   ASSERT_EQ(cbtype{}, aCircularBuffer.getFront());
@@ -74,7 +83,7 @@ TEST(circularBuffer, test_5)
 {
   // Size of the circular buffer used in the test
   constexpr unsigned int cbsize {100};
-  cb aCircularBuffer(cbsize);
+  cb_t aCircularBuffer(cbsize);
 
   ASSERT_EQ(true, aCircularBuffer.isEmpty());
 }
@@ -83,7 +92,7 @@ TEST(circularBuffer, test_6)
 {
   // Size of the circular buffer used in the test
   constexpr unsigned int cbsize {100};
-  cb aCircularBuffer(cbsize);
+  cb_t aCircularBuffer(cbsize);
 
   ASSERT_EQ(false, aCircularBuffer.isFull());
 }
@@ -92,7 +101,7 @@ TEST(circularBuffer, test_7)
 {
   // Size of the circular buffer used in the test
   constexpr unsigned int cbsize {100};
-  cb aCircularBuffer(cbsize);
+  cb_t aCircularBuffer(cbsize);
 
   ASSERT_EQ(false, aCircularBuffer.isPopulated());
 }
@@ -101,7 +110,7 @@ TEST(circularBuffer, test_8)
 {
   // Size of the circular buffer used in the test
   constexpr unsigned int cbsize {100};
-  cb aCircularBuffer(cbsize);
+  cb_t aCircularBuffer(cbsize);
 
   ASSERT_EQ(0, aCircularBuffer.getNumElements());
 }
@@ -110,7 +119,7 @@ TEST(circularBuffer, test_9)
 {
   // Size of the circular buffer used in the test
   constexpr unsigned int cbsize {100};
-  cb aCircularBuffer(cbsize);
+  cb_t aCircularBuffer(cbsize);
 
   circular_buffer::cbBase::cbStatus cbS {};
   cbtype item {};
@@ -135,7 +144,7 @@ TEST(circularBuffer, test_10)
 {
   // Size of the circular buffer used in the test
   constexpr unsigned int cbsize {1};
-  cb aCircularBuffer(cbsize);
+  cb_t aCircularBuffer(cbsize);
 
   circular_buffer::cbBase::cbStatus cbS {};
   size_t numElements {};
@@ -158,7 +167,7 @@ TEST(circularBuffer, test_11)
 {
   // Size of the circular buffer used in the test
   constexpr unsigned int cbsize {2};
-  cb aCircularBuffer(cbsize);
+  cb_t aCircularBuffer(cbsize);
 
   circular_buffer::cbBase::cbStatus cbS {};
   cbtype item {123};
@@ -182,7 +191,7 @@ TEST(circularBuffer, test_12)
 {
   // Size of the circular buffer used in the test
   constexpr unsigned int cbsize {2};
-  cb aCircularBuffer(cbsize);
+  cb_t aCircularBuffer(cbsize);
 
   circular_buffer::cbBase::cbStatus cbS {};
   size_t numElements {};
@@ -206,7 +215,7 @@ TEST(circularBuffer, test_13)
 {
   // Size of the circular buffer used in the test
   constexpr unsigned int cbsize {2};
-  cb aCircularBuffer(cbsize);
+  cb_t aCircularBuffer(cbsize);
 
   circular_buffer::cbBase::cbStatus cbS {};
   size_t numElements {};
@@ -231,7 +240,7 @@ TEST(circularBuffer, test_14)
 {
   // Size of the circular buffer used in the test
   constexpr unsigned int cbsize {2};
-  cb aCircularBuffer(cbsize);
+  cb_t aCircularBuffer(cbsize);
 
   circular_buffer::cbBase::cbStatus cbS {};
   cbtype item {456};
@@ -274,7 +283,7 @@ TEST(circularBuffer, test_15)
 {
   // Size of the circular buffer used in the test
   constexpr unsigned int cbsize {3};
-  cb aCircularBuffer(cbsize);
+  cb_t aCircularBuffer(cbsize);
 
   circular_buffer::cbBase::cbStatus cbS {};
   cbtype item {1};

@@ -23,10 +23,7 @@ cbBase::statusStringMap const cbBase::m_statusStrings
 #pragma clang diagnostic pop
 // END: ignore the warnings when compiled with clang up to here
 
-cbBase::~cbBase()
-{}
-
-cbBase::cbBase(const unsigned int cbSize) noexcept(false)
+cbBase::cbBase(const unsigned long cbSize) noexcept(false)
 :
 m_cbSize(cbSize)
 {
@@ -54,7 +51,7 @@ cbBase::_isFull() const noexcept
   return (m_cbSize == m_numElements);
 }
 
-unsigned int
+unsigned long
 cbBase::getNumElements() const noexcept
 {
   std::lock_guard<std::mutex> mlg(m_mx);
@@ -88,8 +85,11 @@ cbBase::isPopulated() const noexcept
 
 const
 std::string&
-cbBase::cbStatusString(const cbBase::cbStatus cbs) const noexcept
+cbBase::cbStatusString(const cbBase::cbStatus cbs) const noexcept(false)
 {
+  // at() returns a reference to the character at specified location pos.
+  // Bounds checking is performed, exception of type std::out_of_range will be
+  // thrown on invalid access.
   return m_statusStrings.at(cbs);
 }
 }  // namespace circular_buffer
