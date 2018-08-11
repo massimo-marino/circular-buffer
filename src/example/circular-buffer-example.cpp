@@ -4,7 +4,6 @@
  * 
  * Created on April 12, 2017, 8:17 PM
  */
-
 #include "circularBuffer.h"
 #include <future>
 #include <sstream>

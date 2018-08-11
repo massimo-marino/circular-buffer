@@ -33,24 +33,6 @@ m_cbSize(cbSize)
   }
 }
 
-size_t
-cbBase::size() const noexcept
-{
-  return m_cbSize;
-}
-
-bool
-cbBase::_isEmpty() const noexcept
-{
-  return (0 == m_numElements);
-}
-
-bool
-cbBase::_isFull() const noexcept
-{
-  return (m_cbSize == m_numElements);
-}
-
 unsigned long
 cbBase::getNumElements() const noexcept
 {
@@ -81,16 +63,6 @@ cbBase::isPopulated() const noexcept
   std::lock_guard<std::mutex> mlg(m_mx);
 
   return (m_numElements > 0);
-}
-
-const
-std::string&
-cbBase::cbStatusString(const cbBase::cbStatus cbs) const noexcept(false)
-{
-  // at() returns a reference to the character at specified location pos.
-  // Bounds checking is performed, exception of type std::out_of_range will be
-  // thrown on invalid access.
-  return m_statusStrings.at(cbs);
 }
 }  // namespace circular_buffer
 ////////////////////////////////////////////////////////////////////////////////

@@ -4,14 +4,13 @@
  * 
  * Created on April 12, 2017, 8:17 PM
  */
-
 #include "../circularBuffer.h"
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
 using namespace ::testing;
 ////////////////////////////////////////////////////////////////////////////////
-// This tests run with numerical types only: bool, char, short int, int, ...
+// These tests run with numerical types only: bool, char, short int, int, ...
 // The type of data stored in the circular buffer
 using cbtype = uint16_t;
 

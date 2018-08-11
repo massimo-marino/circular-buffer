@@ -7,9 +7,12 @@
 #pragma once
 
 #include <iostream>
+#include <iomanip>
+#include <string>
 #include <mutex>
 #include <map>
 #include <memory>
+#include <tuple>
 ////////////////////////////////////////////////////////////////////////////////
 namespace circular_buffer
 {
@@ -34,22 +37,49 @@ class cbBase
   bool isEmpty() const noexcept;
   bool isFull() const noexcept;
   bool isPopulated() const noexcept;
-  const std::string& cbStatusString(cbBase::cbStatus cbs) const noexcept(false);
-  size_t size() const noexcept;
+
+  const
+  std::string&
+  cbStatusString(cbBase::cbStatus cbs) const noexcept(false)
+  {
+    // at() returns a reference to the character at specified location pos.
+    // Bounds checking is performed, exception of type std::out_of_range will be
+    // thrown on invalid access.
+    return m_statusStrings.at(cbs);
+  }
+
+  constexpr
+  size_t
+  size() const noexcept
+  {
+    return m_cbSize;
+  }
 
  protected:
   using cbaddret = std::tuple<cbBase::cbStatus, size_t>;
   using statusStringMap = std::map<cbStatus, std::string>;
   static inline const unsigned long m_defaultSize {3};
-  static statusStringMap const m_statusStrings;  
+  static statusStringMap const m_statusStrings;
   const size_t m_cbSize {m_defaultSize};
   // mutables needed since this is a const class: mutable members of const class
   // instances are modifiable
   mutable std::mutex m_mx {};
   mutable unsigned long m_readIndex {0};
   mutable unsigned long m_numElements {0};
-  bool _isEmpty() const noexcept;
-  bool _isFull() const noexcept;
+
+  constexpr
+  bool
+  _isEmpty() const noexcept
+  {
+    return (0 == m_numElements);
+  }
+
+  constexpr
+  bool
+  _isFull() const noexcept
+  {
+    return (m_cbSize == m_numElements);
+  }
 };  // class cbBase
 
 // Template class
@@ -59,7 +89,7 @@ class cb final : public cbBase
   using cbremret = std::tuple<cbBase::cbStatus, T, size_t>;
 
  private:
-  const T m_noItem {};
+  constexpr static inline T m_noItem {};
 
  public:
   // we don't want these objects allocated on the heap
@@ -90,24 +120,41 @@ class cb final : public cbBase
   {}
 
   void
-  printData(const std::string&& caller) const noexcept
-  {    
+  printData(const std::string&& caller = "caller-unspecified") const noexcept
+  {
     std::lock_guard<std::mutex> lg(m_mx);
 
     std::cout << "[" << __func__ << "] "
               << "[" << caller << "] "
-              << "---data start---\n";
+              << "---data start---\n"
+              << std::fixed;
 
     for (unsigned long i {0}; i < m_cbSize; ++i)
     {
-      if ( m_noItem != m_pData.get()[i] || m_readIndex == i)
+      auto d {m_pData.get()[i]};
+
+      if ( m_noItem != d || m_readIndex == i)
       {
         std::cout << "[" << __func__ << "] "
                   << "[" << caller << "] "
                   << i
-                  << ": '"
-                  << m_pData.get()[i]
-                  << "'";
+                  << ": '";
+        if ( 1 == sizeof(decltype(d)) )
+        {
+          if ( std::is_signed<decltype(d)>::value )
+          {
+            std::cout << static_cast<int16_t>(d);
+          }
+          else
+          {
+            std::cout << static_cast<uint16_t>(d);
+          }
+        }
+        else
+        {
+          std::cout << d;
+        }
+        std::cout << "'";
         if ( m_readIndex != i )
         {
           std::cout << "\n";
@@ -121,7 +168,7 @@ class cb final : public cbBase
     std::cout << "[" << __func__ << "] "
               << "[" << caller << "] "
               << "---data end---\n"
-              << '\n';
+              << "\n";
   }
 
   // add an item in the circular buffer, if not full
@@ -143,6 +190,7 @@ class cb final : public cbBase
   }
 
   // return the first item in the circular buffer, no changes in it
+  constexpr
   T
   getFront() const noexcept
   {
