@@ -5,7 +5,7 @@ C++17 implementation of a circular buffer
 
 `cmake` is used to compile the sources.
 
-The default compiler used is `clang++-5.0`.
+The default compiler used is `clang++-9.0`.
 
 The cmake files compile with `-std=c++17`.
 
