@@ -14,7 +14,7 @@ SET (CMAKE_INCLUDE_PATH "-I/clang_9.0.0/include/c++/v1 -I." )
 ##
 SET (CLANG_CXX_FLAGS "-I. -I.. -std=c++17 -Ofast -ffast-math -pthread -pedantic -pedantic-errors -Wall -Weffc++ -Wextra -Wfatal-errors -Weverything -Wno-c++98-compat -Wno-c++98-compat-pedantic -fno-assume-sane-operator-new")
 ####SET (CLANG_CXX_FLAGS "${CLANG_CXX_FLAGS} -fsanitize=undefined")
-SET (GOOGLETEST_LIBS "-lgtest_dll -lgtest_main")
+SET (GOOGLETEST_LIBS "-lgtest")
 SET (CMAKE_CXX_FLAGS "${CLANG_CXX_FLAGS} -mtune=native -march=native -m64 -lm -lrt ${GOOGLETEST_LIBS}")
 ### Googletest code must use libstdc++
 SET (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libstdc++")

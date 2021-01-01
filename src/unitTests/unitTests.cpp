@@ -334,3 +334,9 @@ TEST(circularBuffer, test_15)
   ASSERT_EQ(cbtype {3}, item);
   ASSERT_EQ(0, numElements);
 }
+
+int main(int argc, char **argv)
+{
+  testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}
