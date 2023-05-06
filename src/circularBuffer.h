@@ -219,3 +219,4 @@ class cb final : public cbBase
   }
 };  // class cb
 }  // namespace circular_buffer
+

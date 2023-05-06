@@ -4,15 +4,17 @@
  * 
  * Created on April 12, 2017, 8:17 PM
  */
-#include "circularBuffer.h"
+#include "../circularBuffer.h"
 #include <future>
 #include <sstream>
+#include <chrono>
+#include <thread>
 ////////////////////////////////////////////////////////////////////////////////
 // Multi-threaded Producer/Consumer example
 // This example runs with numerical types only: bool, char, short int, int, ...
 
 // The data type stored in the circular buffer
-using cbtype = uint16_t;
+using cbtype = uint32_t;
 
 // Alias for the circular buffer templated type used in the example
 using cb_t = circular_buffer::cb<cbtype>;
@@ -21,7 +23,7 @@ using cb_shptr_t = std::shared_ptr<cb_t>;
 static constexpr unsigned int CBSIZE {50};
 
 // Number of items produced by the producer thread
-static constexpr cbtype MAX_LIMIT_DEFAULT {static_cast<cbtype>(20'000)};
+static constexpr cbtype MAX_LIMIT_DEFAULT {static_cast<cbtype>(200'000)};
 // in order to avoid overflow, take the min between the max limit default
 // value and the max value for the type cbtype
 static constexpr cbtype LIMIT {std::min(MAX_LIMIT_DEFAULT, std::numeric_limits<cbtype>::max())};
@@ -75,7 +77,7 @@ printCBStatus(std::string&& callerFun,
           << "[" << callerFun << "] "
           << "aCircularBuffer is populated: "
           << aCircularBuffer.isPopulated()
-          << std::endl;
+          << "\n\n";
 
   aCircularBuffer.printData(std::forward<std::string>(callerFun));
 }  // printCBStatus
@@ -112,7 +114,7 @@ producerExample(const cb_shptr_t& cb_shptr) -> cbtype
                 << item
                 << " - num of elements: "
                 << numElements
-                << std::endl;
+                << "\n";
         previousCBS = cbS;
 #endif
         ++item;
@@ -129,7 +131,7 @@ producerExample(const cb_shptr_t& cb_shptr) -> cbtype
                   << cb_shptr->cbStatusString(cbS)
                   << " - num of elements: "
                   << numElements
-                  << std::endl;
+                  << "\n";
           previousCBS = cbS;
         }
 #endif
@@ -138,10 +140,10 @@ producerExample(const cb_shptr_t& cb_shptr) -> cbtype
       break;
     }
   }
-
+#ifdef DO_LOGS
   pclog{} << "[" << __func__ << "] "
-          << "TERMINATED"
-          << std::endl;
+          << "TERMINATED\n";
+#endif
   return (item - static_cast<cbtype>(1));
 }  // producerExample
 
@@ -174,7 +176,7 @@ consumerExample(const cb_shptr_t& cb_shptr) -> cbtype
                 << item
                 << " - num of elements: "
                 << numElements
-                << std::endl;
+                << "\n";
         previousCBS = cbS;
 #endif
         allow(0);
@@ -190,7 +192,7 @@ consumerExample(const cb_shptr_t& cb_shptr) -> cbtype
                   << cb_shptr->cbStatusString(cbS)
                   << " - num of elements: "
                   << numElements
-                  << std::endl;
+                  << "\n";
           previousCBS = cbS;
         }
 #endif
@@ -199,10 +201,10 @@ consumerExample(const cb_shptr_t& cb_shptr) -> cbtype
       break;
     }
   }
-
+#ifdef DO_LOGS
   pclog{} << "[" << __func__ << "] "
-          << "TERMINATED"
-          << std::endl;
+          << "TERMINATED\n";
+#endif
   return item;
 }  // consumerExample
 
@@ -224,15 +226,18 @@ static
 void
 taskExample () noexcept
 {
+  std::cout << "[" << __func__ << "] STARTING\n\n";
+
   constexpr unsigned int cbsize {CBSIZE};
   cb_shptr_t aCircularBuffer_sp = std::make_shared<cb_t>(cbsize);
 
   auto num_cpus = std::thread::hardware_concurrency();
+#ifdef DO_LOGS
   pclog{} << "[" << __func__ << "] "
           << "There are "
           << num_cpus
-          << " cores"
-          << std::endl;
+          << " cores\n";
+#endif
 
   // tasks launched asynchronously
   std::future<cbtype> cf = std::async(std::launch::async,
@@ -247,29 +252,38 @@ taskExample () noexcept
   {
     auto pr = pf.get();
     auto cr = cf.get();
+#ifdef DO_LOGS
     pclog{} << "[" << __func__ << "] "
-            << "producer result: " << pr << std::endl;
+            << "producer result: " << pr << "\n";
     pclog{} << "[" << __func__ << "] "
-            << "consumer result: " << cr << std::endl;
-
-    aCircularBuffer_sp->printData(__func__);
+            << "consumer result: " << cr << "\n";
+#endif
   }
   catch( const std::exception& e )
   {
+#ifdef DO_LOGS
     pclog{} << "EXCEPTION: "
             << e.what()
-            << std::endl;
+            << "\n";
+#endif
   }
 
-  pclog{} << "[" << __func__ << "] "
-          << "TERMINATED"
-          << std::endl;
+#ifdef DO_LOGS
+  printCBStatus(__func__, *aCircularBuffer_sp);
+#else
+  aCircularBuffer_sp->printData(__func__);
+#endif
+
+  std::cout << "[" << __func__ << "] "
+            << "TERMINATED\n";
 }  // taskExample
 
 static
 void
 threadedExample() noexcept
 {
+  std::cout << "[" << __func__ << "] STARTING\n\n";
+
   constexpr unsigned int cbsize {CBSIZE};
   cb_shptr_t aCircularBuffer_sp = std::make_shared<cb_t>(cbsize);
 
@@ -280,15 +294,15 @@ threadedExample() noexcept
   {
     ++consumerCPU;
   }
-  pclog{} << "[" << __func__ << "] "
-          << "There are "
-          << numCPUs
-          << " cores - Using 2 cores: core "
-          << producerCPU
-          << " for Producer thread, core "
-          << consumerCPU
-          << " for Consumer thread"
-          << std::endl;
+
+  std::cout << "[" << __func__ << "] "
+            << "There are "
+            << numCPUs
+            << " cores - Using 2 cores: core "
+            << producerCPU
+            << " for Producer thread, core "
+            << consumerCPU
+            << " for Consumer thread\n\n";
 
   try
   {
@@ -302,7 +316,9 @@ threadedExample() noexcept
                                     sizeof(cpu_set_t), &consumer_cpuset)};
     if ( 0 != crc )
     {
+#ifdef DO_LOGS
       pclog{} << "Error calling pthread_setaffinity_np: " << crc << "\n";
+#endif
     }
 
     std::thread pthrd(producerThreadedExample, aCircularBuffer_sp);
@@ -315,51 +331,60 @@ threadedExample() noexcept
                                     sizeof(cpu_set_t), &producer_cpuset)};
     if ( 0 != prc )
     {
+#ifdef DO_LOGS
       pclog{} << "Error calling pthread_setaffinity_np: " << prc << "\n";
+#endif
     }
 
     cthrd.join();
     pthrd.join();
-    aCircularBuffer_sp->printData(__func__);
   }
   catch( const std::exception& e )
   {
-    pclog{} << "EXCEPTION: " << e.what() << std::endl;
+#ifdef DO_LOGS
+    pclog{} << "EXCEPTION: " << e.what() << "\n";
+#endif
   }
   catch( ... )
   {
-    pclog{} << "EXCEPTION" << std::endl;
+#ifdef DO_LOGS
+    pclog{} << "EXCEPTION\n";
+#endif
   }
 
-  pclog{} << "[" << __func__ << "] "
-          << "TERMINATED"
-          << std::endl;
+#ifdef DO_LOGS
+  printCBStatus(__func__, *aCircularBuffer_sp);
+#else
+  aCircularBuffer_sp->printData(__func__);
+#endif
+  std::cout << "[" << __func__ << "] "
+            << "TERMINATED\n";
 }  // threadedExample
 
 auto
 main() -> int
 {
+  std::cout << "\n[" << __func__ << "] STARTING\n";
+
   // this example only deals with integral or floating points types
   static_assert( (   (false == std::is_floating_point<cbtype>::value)
                   || (false == std::is_integral<cbtype>::value)),
                  "expected integral or floating point types");
-  
-  pclog{} << "\n\n[" << __func__ << "] "
-          << "Using a circular buffer of "
-          << CBSIZE
-          << " elements. Producing "
-          << LIMIT
-          << " elements\n"
-          << std::endl;
+
+  std::cout << "\n[" << __func__ << "] "
+            << "Using a circular buffer of "
+            << CBSIZE
+            << " elements. Producing "
+            << LIMIT
+            << " elements\n\n";
 
   threadedExample();
 
-  pclog{} << "\n------------------------------------\n"
-          << std::endl;
+  std::cout << "\n------------------------------------\n\n";
 
   taskExample();
 
-  pclog{} << "\n[" << __func__ << "] "
-          << "TERMINATED"
-          << std::endl;
+  std::cout << "\n[" << __func__ << "] "
+            << "TERMINATED\n\n";
 }  // main
+

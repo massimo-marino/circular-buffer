@@ -1,5 +1,6 @@
-cmake_minimum_required(VERSION 3.5)
-project (circular-buffer-lib)
-add_subdirectory (src)
-add_subdirectory (src/example)
-add_subdirectory (src/unitTests)
+cmake_minimum_required(VERSION 3.26)
+PROJECT(circular-buffer-lib)
+ADD_SUBDIRECTORY(src)
+ADD_SUBDIRECTORY(src/example)
+ADD_SUBDIRECTORY(src/unitTests)
+

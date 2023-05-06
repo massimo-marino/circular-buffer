@@ -3,13 +3,11 @@ C++17 implementation of a circular buffer
 
 #### Requirements
 
-`cmake` is used to compile the sources.
+`cmake 3.26.3` is used to compile the sources.
 
-The default compiler used is `clang++-9.0`.
+The cmake file compiles with `C++17`.
 
-The cmake files compile with `-std=c++17`.
-
-The unit tests are implemented in `googletest`: be sure you have installed `googletest` to compile.
+The unit tests are implemented in googletest: be sure you have installed googletest to compile.
 
 
 #### Install
