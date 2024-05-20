@@ -1,17 +1,10 @@
 /* 
  * File:   circularBuffer.cpp
- * Author: massimo
- * 
- * Created on April 12, 2017, 8:17 PM
  */
 #include "circularBuffer.h"
 ////////////////////////////////////////////////////////////////////////////////
 namespace circular_buffer
 {
-// BEGIN: ignore the warnings listed below when compiled with clang from here
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wexit-time-destructors"
-#pragma clang diagnostic ignored "-Wglobal-constructors"
 cbBase::statusStringMap const cbBase::m_statusStrings
 {
    { cbBase::cbStatus::UNKNOWN, "UNKNOWN"}
@@ -20,8 +13,6 @@ cbBase::statusStringMap const cbBase::m_statusStrings
   ,{ cbBase::cbStatus::REMOVED, "REMOVED"}
   ,{ cbBase::cbStatus::FULL,    "FULL"}
 };
-#pragma clang diagnostic pop
-// END: ignore the warnings when compiled with clang up to here
 
 cbBase::cbBase(const unsigned long cbSize) noexcept(false)
 :

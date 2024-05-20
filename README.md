@@ -1,11 +1,11 @@
 # circular-buffer
-C++17 implementation of a circular buffer
+C++17/20 implementation of a circular buffer
 
 #### Requirements
 
-`cmake 3.26.3` is used to compile the sources.
+`cmake` is used to compile the sources.
 
-The cmake file compiles with `C++17`.
+The cmake file compiles with `C++20`.
 
 The unit tests are implemented in googletest: be sure you have installed googletest to compile.
 

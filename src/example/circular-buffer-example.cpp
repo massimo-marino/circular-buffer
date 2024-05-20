@@ -1,8 +1,5 @@
 /* 
  * File:   circular-buffer-example.cpp
- * Author: massimo
- * 
- * Created on April 12, 2017, 8:17 PM
  */
 #include "../circularBuffer.h"
 #include <future>
